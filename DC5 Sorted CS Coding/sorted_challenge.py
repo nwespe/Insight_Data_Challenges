@@ -23,23 +23,29 @@ For example: 20 cat bi?rd 12 do@g >> should read >> 12 bird cat 20 dog
 
 
 def read_input(input_file):
-    # read single line from file into a list of strings
+    """ Read single line from file into a list of strings """
+
     with open(input_file, 'r') as f:
         readfile = f.read().split(' ')
     return readfile
 
 
 def clean_symbols(int_word_list):
-    # remove any non-alphanumeric symbols from the ints and words in the list
+    """ Remove any non-alphanumeric symbols from the ints and words in the list """
+
     for i, x in enumerate(int_word_list):
         if not x.isalnum():
-            if x[0] == '-':   # special handling for negative integers
-                cleaned_x = [a for a in x[1:] if a.isalnum()]
-                if ''.join(cleaned_x).isdigit():  # assume negative integer if first symbol is '-' followed by digits
-                    cleaned_x = ['-'] + cleaned_x
-            else:
-                cleaned_x = [a for a in x if a.isalnum()]
-            int_word_list[i] = ''.join(cleaned_x)
+            cleaned_x = [a for a in x if a.isalnum()]
+            new_x = ''.join(cleaned_x)
+
+            # special handling for negative integers
+            if new_x.isdigit() and '-' in x:  # check for negative sign
+                dash_location = x.find('-')
+                first_num_location = x.find(new_x[0])
+                if dash_location < first_num_location:
+                    new_x = '-' + new_x
+
+            int_word_list[i] = new_x
     return int_word_list
 
 
@@ -77,13 +83,19 @@ def reassemble_list(int_list, word_list, indices):
     return sorted_joined_list
 
 
+def save_output(output_list):
+    with open('results.txt', 'w') as f:
+        f.write(' '.join(str(x) for x in output_list))
+
+
 def main(input_file):
     print 'received input file ' + input_file
     readfile = read_input(input_file)
     cleaned_list = clean_symbols(readfile)
     int_list, word_list, indices = separate_ints_words(cleaned_list)
     sorted_ints, sorted_words = sort_lists(int_list, word_list)
-    print reassemble_list(sorted_ints, sorted_words, indices)
+    output_list = reassemble_list(sorted_ints, sorted_words, indices)
+    save_output(output_list)
 
 
 if __name__ == '__main__':
